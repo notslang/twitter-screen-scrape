@@ -1,0 +1,22 @@
+{
+  "name": "twitter-screen-scrape",
+  "description": "scrape public twitter data w/out API access",
+  "version": "0.0.0",
+  "author": "Sean Lang <slang800@gmail.com>",
+  "bin": {
+    "twitter-screen-scrape": "./bin/index.js"
+  },
+  "dependencies": {
+    "JSONStream": "^0.10.0",
+    "argparse": "^0.1.16",
+    "bignum": "^0.9.2",
+    "jsdom": "^3.0.2",
+    "request-promise": "^0.3.3",
+    "when": "^3.6.4"
+  },
+  "devDependencies": {
+    "coffee-script": "^1.9.1"
+  },
+  "license": "GPLv3",
+  "main": "lib"
+}
