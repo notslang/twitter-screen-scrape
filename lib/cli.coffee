@@ -23,4 +23,4 @@ argparser.addArgument(
 )
 
 argv = argparser.parseArgs()
-scrape(argv).pipe(JSONStream.stringify()).pipe(process.stdout)
+scrape(argv).pipe(JSONStream.stringify('[', ',\n', ']\n')).pipe(process.stdout)
