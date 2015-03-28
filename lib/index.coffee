@@ -70,7 +70,7 @@ module.exports = ({username, retweets}) ->
           isRetweet: isRetweet
           username: username
           text: element.querySelector('.ProfileTweet-text').textContent
-          time: +element.querySelector('.js-short-timestamp').getAttribute('data-time') * 1000
+          time: +element.querySelector('.js-short-timestamp').getAttribute('data-time')
           images: []
         }
 
