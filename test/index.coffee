@@ -20,3 +20,13 @@ describe 'tweet stream', ->
     ).on('end', ->
       done()
     )
+
+  it 'should include a valid time for each tweet', ->
+    # unix time values
+    year2000 = 946702800
+    year3000 = 32503698000
+
+    for tweet in @tweets
+      tweet.time.should.be.an.instanceOf(Number)
+      (tweet.time > year2000).should.be.true
+      (tweet.time < year3000).should.be.true # twitter should be dead by then
