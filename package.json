@@ -16,8 +16,14 @@
     "when": "^3.6.4"
   },
   "devDependencies": {
-    "coffee-script": "^1.9.1"
+    "coffee-script": "^1.9.1",
+    "isstream": "^0.1.2",
+    "mocha": "^2.2.1",
+    "should": "^5.2.0"
   },
   "license": "GPLv3",
-  "main": "lib"
+  "main": "lib",
+  "scripts": {
+    "test": "mocha"
+  }
 }
