@@ -37,9 +37,6 @@ streamOfTweets.on('readable', ->
   # parse JSON or anything.
   tweet = streamOfTweets.read()
 
-  # null means it's the end of the stream
-  if tweet is null then return
-
   # the time field is represented in UNIX time
   time = new Date(tweet.time * 1000)
 
@@ -65,7 +62,6 @@ streamOfTweets = scrape({
 streamOfTweets.on('readable', function() {
   var time, tweet;
   tweet = streamOfTweets.read();
-  if (tweet === null) return;
   time = new Date(tweet.time * 1000);
   console.log([
     "slang800's tweet from ",

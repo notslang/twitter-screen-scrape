@@ -1,4 +1,6 @@
-Readable = require('stream').Readable
+# see http://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html for
+# why we use readable-stream
+Readable = require('readable-stream').Readable
 jsdom = require 'jsdom'
 nodefn = require 'when/node'
 request = require 'request-promise'
