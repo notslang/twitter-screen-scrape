@@ -1,8 +1,7 @@
 # see http://r.va.gg/2014/06/why-i-dont-use-nodes-core-stream-module.html for
 # why we use readable-stream
 Readable = require('readable-stream').Readable
-jsdom = require 'jsdom'
-nodefn = require 'when/node'
+cheerio = require 'cheerio'
 request = require 'request-promise'
 bigint = require 'bignum'
 
@@ -21,10 +20,7 @@ getPostElements = (username, startingId) ->
       'max_id': startingId
   ).then((response) ->
     html = JSON.parse(response)['items_html']
-    nodefn.call(jsdom.env, html)
-  ).then((window) ->
-    # query to get all the tweets out of the DOM
-    window.document.querySelectorAll('.Grid[data-component-term="tweet"]')
+    cheerio.load(html)
   )
 
 ###*
@@ -54,16 +50,18 @@ module.exports = ({username, retweets}) ->
   output._read = (->) # prevent "Error: not implemented" with a noop
 
   scrapeTwitter = (username, startingId) ->
-    getPostElements(username, startingId).then((elements) ->
+    getPostElements(username, startingId).then(($) ->
+      # query to get all the tweets out of the DOM
+      elements = $('.Grid[data-component-term="tweet"]')
       scrapedIds = []
       for element in elements
         # we get the id & add it to scrapedIds before skipping retweets because
         # the lowest id might be a retweet, or all the tweets in this page might
         # be retweets
-        id = element.querySelector('.StreamItem').getAttribute('data-item-id')
+        id = $(element).find('.StreamItem').first().attr('data-item-id')
         scrapedIds.push id
 
-        isRetweet = element.querySelector('.js-retweet-text') isnt null
+        isRetweet = $(element).find('.js-retweet-text').length isnt 0
         if not retweets and isRetweet
           continue # skip retweet
 
@@ -71,27 +69,27 @@ module.exports = ({username, retweets}) ->
           id: id
           isRetweet: isRetweet
           username: username
-          text: element.querySelector('.ProfileTweet-text').textContent
-          time: +element.querySelector('.js-short-timestamp').getAttribute('data-time')
+          text: $(element).find('.ProfileTweet-text').first().text()
+          time: +$(element).find('.js-short-timestamp').first().attr('data-time')
           images: []
         }
 
         for action in actions
-          wrapper = element.querySelector(
+          wrapper = $(element).find(
             ".ProfileTweet-action--#{action} .ProfileTweet-actionCount"
           )
           post[action] = (
-            if wrapper isnt null
-              +wrapper.getAttribute('data-tweet-stat-count')
+            if wrapper.length isnt 0
+              +$(wrapper).first().attr('data-tweet-stat-count')
             else
-              0
+              undefined
           )
 
-        pics = element.querySelectorAll(
+        pics = $(element).find(
           '.TwitterMultiPhoto-image img, .TwitterPhoto-mediaSource'
         )
         for pic in pics
-          post.images.push pic.getAttribute('src')
+          post.images.push $(pic).attr('src')
 
         output.push post
 
