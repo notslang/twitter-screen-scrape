@@ -1,5 +1,5 @@
 # Twitter Screen Scrape
-[![Build Status](http://img.shields.io/travis/slang800/twitter-screen-scrape.svg?style=flat-square)](https://travis-ci.org/slang800/twitter-screen-scrape) [![NPM version](http://img.shields.io/npm/v/twitter-screen-scrape.svg?style=flat-square)](https://www.npmjs.org/package/twitter-screen-scrape) [![NPM license](http://img.shields.io/npm/l/twitter-screen-scrape.svg?style=flat-square)](https://www.npmjs.org/package/twitter-screen-scrape)
+[![Build Status](http://img.shields.io/travis/slang800/twitter-screen-scrape/master.svg?style=flat-square)](https://travis-ci.org/slang800/twitter-screen-scrape) [![NPM version](http://img.shields.io/npm/v/twitter-screen-scrape.svg?style=flat-square)](https://www.npmjs.org/package/twitter-screen-scrape) [![NPM license](http://img.shields.io/npm/l/twitter-screen-scrape.svg?style=flat-square)](https://www.npmjs.org/package/twitter-screen-scrape)
 
 A tool for scraping public data from Twitter, without needing to get permission from Twitter. It can (theoretically) scrape anything that a non-logged-in user can see. But, right now it only supports getting tweets for a given username.
 
