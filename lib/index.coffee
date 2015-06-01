@@ -52,13 +52,13 @@ module.exports = ({username, retweets}) ->
   scrapeTwitter = (username, startingId) ->
     getPostElements(username, startingId).then(($) ->
       # query to get all the tweets out of the DOM
-      elements = $('.Grid[data-component-term="tweet"]')
+      elements = $('.original-tweet')
       scrapedIds = []
       for element in elements
         # we get the id & add it to scrapedIds before skipping retweets because
         # the lowest id might be a retweet, or all the tweets in this page might
         # be retweets
-        id = $(element).find('.StreamItem').first().attr('data-item-id')
+        id = $(element).attr('data-item-id')
         scrapedIds.push id
 
         isRetweet = $(element).find('.js-retweet-text').length isnt 0
@@ -69,7 +69,7 @@ module.exports = ({username, retweets}) ->
           id: id
           isRetweet: isRetweet
           username: username
-          text: $(element).find('.ProfileTweet-text').first().text()
+          text: $(element).find('.tweet-text').first().text()
           time: +$(element).find('.js-short-timestamp').first().attr('data-time')
           images: []
         }
@@ -86,10 +86,10 @@ module.exports = ({username, retweets}) ->
           )
 
         pics = $(element).find(
-          '.TwitterMultiPhoto-image img, .TwitterPhoto-mediaSource'
+          '.multi-photos .multi-photo[data-url], [data-card-type=photo] [data-url]'
         )
         for pic in pics
-          post.images.push $(pic).attr('src')
+          post.images.push $(pic).attr('data-url')
 
         output.push post
 
