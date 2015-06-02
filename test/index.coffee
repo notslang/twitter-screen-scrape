@@ -17,7 +17,8 @@ describe 'tweet stream', ->
       tweet = @stream.read()
       tweet.should.be.an.instanceOf(Object)
       @tweets.push tweet
-    ).on('end', ->
+    ).on('end', =>
+      @tweets.length.should.be.above(0)
       done()
     )
 
