@@ -86,7 +86,8 @@ module.exports = ({username, retweets}) ->
           )
 
         pics = $(element).find(
-          '.multi-photos .multi-photo[data-url], [data-card-type=photo] [data-url]'
+          '.multi-photos .multi-photo[data-url],
+          [data-card-type=photo] [data-url]'
         )
         for pic in pics
           post.images.push $(pic).attr('data-url')
