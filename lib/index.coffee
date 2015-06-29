@@ -36,11 +36,17 @@ class TwitterPosts extends Readable
     # remove the explicit HWM setting when github.com/nodejs/node/commit/e1fec22
     # is merged into readable-stream
     super(highWaterMark: 16, objectMode: true)
+    @_readableState.destroyed = false
 
   _read: =>
     # prevent additional requests from being made while one is already running
     if @_lock then return
     @_lock = true
+
+    if @_readableState.destroyed
+      @push(null)
+      return
+
     hasMorePosts = undefined
 
     # we hold one post in a buffer because we need something to send directly
@@ -99,5 +105,17 @@ class TwitterPosts extends Readable
       @push(lastPost)
       if not hasMorePosts then @push(null)
     )
+
+  destroy: =>
+    if @_readableState.destroyed then return
+    @_readableState.destroyed = true
+
+    @_destroy((err) =>
+      if (err) then @emit('error', err)
+      @emit('close')
+    )
+
+  _destroy: (cb) ->
+    process.nextTick(cb)
 
 module.exports = TwitterPosts
