@@ -13,8 +13,7 @@ describe 'tweet stream', ->
 
   it 'should stream tweet objects', (done) ->
     @timeout(4000)
-    @stream.on('readable', =>
-      tweet = @stream.read()
+    @stream.on('data', (tweet) =>
       tweet.should.be.an.instanceOf(Object)
       @tweets.push tweet
     ).on('end', =>
