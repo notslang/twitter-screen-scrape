@@ -1,4 +1,4 @@
-scrape = require './'
+TwitterPosts = require './'
 packageInfo = require '../package'
 ArgumentParser = require('argparse').ArgumentParser
 JSONStream = require 'JSONStream'
@@ -23,4 +23,5 @@ argparser.addArgument(
 )
 
 argv = argparser.parseArgs()
-scrape(argv).pipe(JSONStream.stringify('[', ',\n', ']\n')).pipe(process.stdout)
+stream = new TwitterPosts(argv)
+stream.pipe(JSONStream.stringify('[', ',\n', ']\n')).pipe(process.stdout)

@@ -26,10 +26,10 @@ $ twitter-screen-scrape -u slang800 --no-retweets | wc -l
 The following example is in CoffeeScript.
 
 ```coffee
-scrape = require 'twitter-screen-scrape'
+TwitterPosts = require 'twitter-screen-scrape'
 
 # create the stream
-streamOfTweets = scrape(username: 'slang800', retweets: false)
+streamOfTweets = new TwitterPosts(username: 'slang800', retweets: false)
 
 # do something interesting with the stream
 streamOfTweets.on('readable', ->
@@ -51,10 +51,10 @@ streamOfTweets.on('readable', ->
 The following example is the same as the last one, but in JavaScript.
 
 ```js
-var scrape, streamOfTweets;
-scrape = require('twitter-screen-scrape');
+var TwitterPosts, streamOfTweets;
+TwitterPosts = require('twitter-screen-scrape');
 
-streamOfTweets = scrape({
+streamOfTweets = new TwitterPosts({
   username: 'slang800',
   retweets: false
 });

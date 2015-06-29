@@ -31,7 +31,8 @@ class TwitterPosts extends Readable
   _lock: false
   _minPostId: undefined
 
-  constructor: (@username, @retweets) ->
+  constructor: ({@username, @retweets}) ->
+    @retweets ?= true
     # remove the explicit HWM setting when github.com/nodejs/node/commit/e1fec22
     # is merged into readable-stream
     super(highWaterMark: 16, objectMode: true)
@@ -99,5 +100,4 @@ class TwitterPosts extends Readable
       if not hasMorePosts then @push(null)
     )
 
-module.exports = ({username, retweets}) ->
-  new TwitterPosts(username, retweets)
+module.exports = TwitterPosts

@@ -1,11 +1,11 @@
 should = require 'should'
 isStream = require 'isstream'
 
-scrape = require '../lib'
+TwitterPosts = require '../lib'
 
 describe 'tweet stream', ->
   before ->
-    @stream = scrape(username: 'slang800', retweets: false)
+    @stream = new TwitterPosts(username: 'slang800', retweets: false)
     @tweets = []
 
   it 'should return a stream', ->
