@@ -3,7 +3,8 @@
 Readable = require('readable-stream').Readable
 cheerio = require 'cheerio'
 request = require 'request-promise'
-bigint = require 'bignum'
+
+ACTIONS = ['reply', 'retweet', 'favorite']
 
 ###*
  * Make a request for a Twitter page, parse the response, and get all the tweet
@@ -18,63 +19,61 @@ getPostElements = (username, startingId) ->
     uri: "https://twitter.com/i/profiles/show/#{username}/timeline"
     qs:
       'max_position': startingId
-  ).then((response) ->
-    html = JSON.parse(response)['items_html']
-    cheerio.load(html)
   )
 
 ###*
- * Given a list of tweet ids, find the lowest one. Tweet ids are just big ints.
-   So, although they do get screwed up if manupulated as floats, we can use
-   bigint to compare them & find the lowest.
- * @param {Array} ids
- * @return {String} A string representing the lowest id
-###
-getMinTweetId = (ids) ->
-  minId = undefined
-  for id in ids
-    id = bigint(id)
-    minId ?= id
-    if id.lt(minId) then minId = id
-  return minId.toString()
-
-###*
- * Scrape as many tweets as possible for a given user.
+ * Stream that scrapes as many tweets as possible for a given user.
  * @param {String} options.username
  * @param {Boolean} options.retweets Whether to include retweets.
  * @return {Stream} A stream of tweet objects.
 ###
-module.exports = ({username, retweets}) ->
-  actions = ['reply', 'retweet', 'favorite']
-  output = new Readable(objectMode: true)
-  output._read = (->) # prevent "Error: not implemented" with a noop
+class TwitterPosts extends Readable
+  _lock: false
+  _minPostId: undefined
 
-  scrapeTwitter = (username, startingId) ->
-    getPostElements(username, startingId).then(($) ->
+  constructor: (@username, @retweets) ->
+    # remove the explicit HWM setting when github.com/nodejs/node/commit/e1fec22
+    # is merged into readable-stream
+    super(highWaterMark: 16, objectMode: true)
+
+  _read: =>
+    # prevent additional requests from being made while one is already running
+    if @_lock then return
+    @_lock = true
+    hasMorePosts = undefined
+
+    # we hold one post in a buffer because we need something to send directly
+    # after we turn off the lock
+    lastPost = undefined
+
+    getPostElements(@username, @_minPostId).then((response) ->
+      response = JSON.parse(response)
+      html = response['items_html']
+      hasMorePosts = response['has_more_items']
+      cheerio.load(html)
+    ).then(($) =>
       # query to get all the tweets out of the DOM
-      elements = $('.original-tweet')
-      scrapedIds = []
-      for element in elements
-        # we get the id & add it to scrapedIds before skipping retweets because
+      for element in $('.original-tweet')
+        # we get the id & set it as _minPostId before skipping retweets because
         # the lowest id might be a retweet, or all the tweets in this page might
         # be retweets
         id = $(element).attr('data-item-id')
-        scrapedIds.push id
+        @_minPostId = id # only the last one really matters
 
         isRetweet = $(element).find('.js-retweet-text').length isnt 0
-        if not retweets and isRetweet
+        if not @retweets and isRetweet
           continue # skip retweet
 
         post = {
           id: id
           isRetweet: isRetweet
-          username: username
+          username: @username
           text: $(element).find('.tweet-text').first().text()
           time: +$(element).find('.js-short-timestamp').first().attr('data-time')
           images: []
         }
 
-        for action in actions
+        for action in ACTIONS
           wrapper = $(element).find(
             ".ProfileTweet-action--#{action} .ProfileTweet-actionCount"
           )
@@ -92,16 +91,13 @@ module.exports = ({username, retweets}) ->
         for pic in pics
           post.images.push $(pic).attr('data-url')
 
-        output.push post
+        if lastPost? then @push(lastPost)
+        lastPost = post
 
-      return scrapedIds
-    ).then((scrapedIds) ->
-      if scrapedIds.length isnt 0
-        return scrapeTwitter(username, getMinTweetId(scrapedIds))
-      else
-        output.push(null)
-        return
+      if hasMorePosts then @_lock = false
+      @push(lastPost)
+      if not hasMorePosts then @push(null)
     )
 
-  scrapeTwitter(username)
-  return output
+module.exports = ({username, retweets}) ->
+  new TwitterPosts(username, retweets)
