@@ -1,7 +1,7 @@
 {
   "name": "twitter-screen-scrape",
   "description": "scrape public twitter data w/out API access",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "author": "Sean Lang <slang800@gmail.com>",
   "bin": {
     "twitter-screen-scrape": "./bin/index.js"
