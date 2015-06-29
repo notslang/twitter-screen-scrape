@@ -17,7 +17,7 @@ getPostElements = (username, startingId) ->
   request.get(
     uri: "https://twitter.com/i/profiles/show/#{username}/timeline"
     qs:
-      'max_id': startingId
+      'max_position': startingId
   ).then((response) ->
     html = JSON.parse(response)['items_html']
     cheerio.load(html)
