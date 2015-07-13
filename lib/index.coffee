@@ -18,6 +18,8 @@ getPostElements = (username, startingId) ->
   request.get(
     uri: "https://twitter.com/i/profiles/show/#{username}/timeline"
     qs:
+      'include_available_features': '1'
+      'include_entities': '1'
       'max_position': startingId
   )
 
