@@ -18,6 +18,8 @@ getPostElements = (username, startingId) ->
   request.get(
     uri: "https://twitter.com/i/profiles/show/#{username}/timeline"
     qs:
+      'include_available_features': '1'
+      'include_entities': '1'
       'max_position': startingId
   )
 
@@ -36,11 +38,17 @@ class TwitterPosts extends Readable
     # remove the explicit HWM setting when github.com/nodejs/node/commit/e1fec22
     # is merged into readable-stream
     super(highWaterMark: 16, objectMode: true)
+    @_readableState.destroyed = false
 
   _read: =>
     # prevent additional requests from being made while one is already running
     if @_lock then return
     @_lock = true
+
+    if @_readableState.destroyed
+      @push(null)
+      return
+
     hasMorePosts = undefined
 
     # we hold one post in a buffer because we need something to send directly
@@ -50,7 +58,8 @@ class TwitterPosts extends Readable
     getPostElements(@username, @_minPostId).then((response) ->
       response = JSON.parse(response)
       html = response['items_html']
-      hasMorePosts = response['has_more_items']
+      # response['has_more_items'] is a lie, as of 2015-07-13
+      hasMorePosts = response['items_html'] isnt ''
       cheerio.load(html)
     ).then(($) =>
       # query to get all the tweets out of the DOM
@@ -99,5 +108,17 @@ class TwitterPosts extends Readable
       @push(lastPost)
       if not hasMorePosts then @push(null)
     )
+
+  destroy: =>
+    if @_readableState.destroyed then return
+    @_readableState.destroyed = true
+
+    @_destroy((err) =>
+      if (err) then @emit('error', err)
+      @emit('close')
+    )
+
+  _destroy: (cb) ->
+    process.nextTick(cb)
 
 module.exports = TwitterPosts
