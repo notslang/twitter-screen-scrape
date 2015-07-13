@@ -58,7 +58,8 @@ class TwitterPosts extends Readable
     getPostElements(@username, @_minPostId).then((response) ->
       response = JSON.parse(response)
       html = response['items_html']
-      hasMorePosts = response['has_more_items']
+      # response['has_more_items'] is a lie, as of 2015-07-13
+      hasMorePosts = response['items_html'] isnt ''
       cheerio.load(html)
     ).then(($) =>
       # query to get all the tweets out of the DOM
