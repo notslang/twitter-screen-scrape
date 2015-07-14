@@ -59,7 +59,7 @@ class TwitterPosts extends Readable
       response = JSON.parse(response)
       html = response['items_html']
       # response['has_more_items'] is a lie, as of 2015-07-13
-      hasMorePosts = response['items_html'] isnt ''
+      hasMorePosts = response['items_html'].trim() isnt ''
       cheerio.load(html)
     ).then(($) =>
       # query to get all the tweets out of the DOM
@@ -105,7 +105,7 @@ class TwitterPosts extends Readable
         lastPost = post
 
       if hasMorePosts then @_lock = false
-      @push(lastPost)
+      if lastPost? then @push(lastPost)
       if not hasMorePosts then @push(null)
     )
 
