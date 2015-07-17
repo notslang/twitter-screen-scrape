@@ -62,6 +62,8 @@ class TwitterPosts extends Readable
       hasMorePosts = html isnt ''
       cheerio.load(html)
     ).then(($) =>
+      hasEmitted = false
+
       # query to get all the tweets out of the DOM
       for element in $('.original-tweet')
         # we get the id & set it as _minPostId before skipping retweets because
@@ -101,12 +103,21 @@ class TwitterPosts extends Readable
         for pic in pics
           post.images.push $(pic).attr('data-url')
 
-        if lastPost? then @push(lastPost)
+        if lastPost?
+          @push(lastPost)
+          hasEmitted = true
+
         lastPost = post
 
       if hasMorePosts then @_lock = false
-      if lastPost? then @push(lastPost)
+      if lastPost?
+        @push(lastPost)
+        hasEmitted = true
       if not hasMorePosts then @push(null)
+      if not hasEmitted and hasMorePosts
+        # since we haven't emitted anything, we need to get the next page right
+        # now, because there won't be a read call to trigger us
+        @_read()
     )
 
   destroy: =>
