@@ -57,9 +57,9 @@ class TwitterPosts extends Readable
 
     getPostElements(@username, @_minPostId).then((response) ->
       response = JSON.parse(response)
-      html = response['items_html']
+      html = response['items_html'].trim()
       # response['has_more_items'] is a lie, as of 2015-07-13
-      hasMorePosts = response['items_html'].trim() isnt ''
+      hasMorePosts = html isnt ''
       cheerio.load(html)
     ).then(($) =>
       # query to get all the tweets out of the DOM
@@ -114,7 +114,7 @@ class TwitterPosts extends Readable
     @_readableState.destroyed = true
 
     @_destroy((err) =>
-      if (err) then @emit('error', err)
+      if err then @emit('error', err)
       @emit('close')
     )
 
