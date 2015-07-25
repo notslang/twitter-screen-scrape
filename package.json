@@ -19,7 +19,7 @@
     "mocha": "^2.2.1",
     "should": "^5.2.0"
   },
-  "license": "GPLv3",
+  "license": "GPL-3.0",
   "main": "lib",
   "repository": {
     "type": "git",
