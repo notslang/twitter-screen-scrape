@@ -97,11 +97,11 @@ class TwitterPosts extends Readable
           )
 
         pics = $(element).find(
-          '.multi-photos .multi-photo[data-url],
-          [data-card-type=photo] [data-url]'
+          '.multi-photos .multi-photo[data-image-url],
+          [data-card-type=photo] [data-image-url]'
         )
         for pic in pics
-          post.images.push $(pic).attr('data-url')
+          post.images.push $(pic).attr('data-image-url')
 
         if lastPost?
           @push(lastPost)
