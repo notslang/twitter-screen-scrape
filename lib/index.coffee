@@ -2,9 +2,19 @@
 # why we use readable-stream
 Readable = require 'readable-stream/readable'
 cheerio = require 'cheerio'
-request = require 'request-promise'
+fetch = require 'node-fetch'
+queryString = require 'querystring'
 
 ACTIONS = ['reply', 'retweet', 'favorite']
+
+checkStatus = (response) ->
+  if response.status >= 200 and response.status < 300
+    return response
+  else
+    error = new Error(response.statusText)
+    error.response = response
+    throw error
+  return
 
 ###*
  * Make a request for a Twitter page, parse the response, and get all the tweet
@@ -15,12 +25,21 @@ ACTIONS = ['reply', 'retweet', 'favorite']
  * @return {Array} An array of elements.
 ###
 getPostElements = (username, startingId) ->
-  request.get(
-    uri: "https://twitter.com/i/profiles/show/#{username}/timeline"
-    qs:
-      'include_available_features': '1'
-      'include_entities': '1'
-      'max_position': startingId
+  url = "https://twitter.com/i/profiles/show/#{username}/timeline"
+  options =
+    'include_available_features': '1'
+    'include_entities': '1'
+
+  # only add the option if it is defined, since `queryString.stringify` doesn't
+  # like undefined keys
+  if startingId? then options['max_position'] = startingId
+
+  url += '?' + queryString.stringify(options)
+
+  fetch(url).then(
+    checkStatus
+  ).then((response) ->
+    response.json()
   )
 
 ###*
@@ -56,7 +75,6 @@ class TwitterPosts extends Readable
     lastPost = undefined
 
     getPostElements(@username, @_minPostId).then((response) ->
-      response = JSON.parse(response)
       html = response['items_html'].trim()
       # response['has_more_items'] is a lie, as of 2015-07-13
       hasMorePosts = html isnt ''
