@@ -94,11 +94,18 @@ class TwitterPosts extends Readable
         if not @retweets and isRetweet
           continue # skip retweet
 
+        textElement = $(element).find('.tweet-text').first()
+
+        # replace each emoji image with the actual emoji unicode
+        textElement.find('img.twitter-emoji').each((i, emoji) ->
+          $(emoji).html $(emoji).attr('alt')
+        )
+
         post = {
           id: id
           isRetweet: isRetweet
           username: @username
-          text: $(element).find('.tweet-text').first().text()
+          text: textElement.text()
           time: +$(element).find('.js-short-timestamp').first().attr('data-time')
           images: []
         }
