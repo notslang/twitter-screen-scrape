@@ -118,6 +118,8 @@ class TwitterPosts extends Readable
         # since we haven't emitted anything, we need to get the next page right
         # now, because there won't be a read call to trigger us
         @_read()
+    ).catch((err) =>
+      @emit('error', err)
     )
 
   destroy: =>
