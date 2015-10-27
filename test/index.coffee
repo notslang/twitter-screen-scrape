@@ -1,7 +1,9 @@
 should = require 'should'
 isStream = require 'isstream'
+{validate} = require 'json-schema'
 
 TwitterPosts = require '../lib'
+postSchema = require '../lib/post.schema'
 
 describe 'tweet stream', ->
   before ->
@@ -14,12 +16,12 @@ describe 'tweet stream', ->
   it 'should stream tweet objects', (done) ->
     @timeout(4000)
     @stream.on('data', (tweet) =>
-      tweet.should.be.an.instanceOf(Object)
+      validate(tweet, postSchema).errors.should.eql([])
       @tweets.push tweet
     ).on('end', =>
       @tweets.length.should.be.above(0)
       done()
-    )
+    ).on('error', done)
 
   it 'should include a valid time for each tweet', ->
     # unix time values
