@@ -1,7 +1,8 @@
-TwitterPosts = require './'
-packageInfo = require '../package'
 ArgumentParser = require('argparse').ArgumentParser
 JSONStream = require 'JSONStream'
+TwitterPosts = require './'
+packageInfo = require '../package'
+pump = require 'pump'
 
 argparser = new ArgumentParser(
   version: packageInfo.version
@@ -24,4 +25,9 @@ argparser.addArgument(
 
 argv = argparser.parseArgs()
 stream = new TwitterPosts(argv)
-stream.pipe(JSONStream.stringify('[', ',\n', ']\n')).pipe(process.stdout)
+pump(stream, JSONStream.stringify('[', ',\n', ']\n'), process.stdout, (err) ->
+  if err?
+    console.error err.message
+    console.error err.stack
+    process.exit(1)
+)
