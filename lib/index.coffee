@@ -52,6 +52,16 @@ class TwitterPosts extends Readable
   _lock: false
   _minPostId: undefined
 
+  # we use this to ensure that we have gotten a new post since the last request,
+  # so we know if we should make another request
+  # response['has_more_items'] is a lie (as of 2015-07-13), so we just keep
+  # requesting as long as we get new posts. @_lastMinPostId lets us check if
+  # we've gotten a new post since the last request, by comparing aginst the
+  # current @_minPostId. this also prevents us from getting in an infinate loop
+  # if twitter started returning the same final page repeatedly, or something
+  # like that
+  _lastMinPostId: undefined
+
   constructor: ({@username, @retweets}) ->
     @retweets ?= true
     # remove the explicit HWM setting when github.com/nodejs/node/commit/e1fec22
@@ -68,16 +78,12 @@ class TwitterPosts extends Readable
       @push(null)
       return
 
-    hasMorePosts = undefined
-
     # we hold one post in a buffer because we need something to send directly
     # after we turn off the lock
     lastPost = undefined
 
     getPostElements(@username, @_minPostId).then((response) ->
       html = response['items_html'].trim()
-      # response['has_more_items'] is a lie, as of 2015-07-13
-      hasMorePosts = html isnt ''
       cheerio.load(html)
     ).then(($) =>
       hasEmitted = false
@@ -134,7 +140,11 @@ class TwitterPosts extends Readable
 
         lastPost = post
 
-      if hasMorePosts then @_lock = false
+      hasMorePosts = @_lastMinPostId isnt @_minPostId
+
+      if hasMorePosts
+        @_lock = false
+        @_lastMinPostId = @_minPostId
       if lastPost?
         @push(lastPost)
         hasEmitted = true
