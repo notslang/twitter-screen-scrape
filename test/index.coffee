@@ -1,5 +1,5 @@
-should = require 'should'
 isStream = require 'isstream'
+should = require 'should'
 {validate} = require 'json-schema'
 
 TwitterPosts = require '../lib'
